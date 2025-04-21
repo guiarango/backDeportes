@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { CreateSportDto } from './dto/create-sport.dto';
 import { UpdateSportDto } from './dto/update-sport.dto';
 
@@ -19,6 +23,7 @@ export class SportsService {
     this.default_limit = configService.get<number>('defaultLimit');
     this.default_page = configService.get<number>('defaultPage');
   }
+
   async create(createSportDto: CreateSportDto) {
     try {
       const sport = await this.sportModel.create(createSportDto);
@@ -46,7 +51,9 @@ export class SportsService {
   }
 
   handleError(error: any) {
+    if (error.code === 11000) throw new BadRequestException(error.errmsg);
+
     console.log(error);
-    throw new Error(`[Unknown Error] ${error.message}`);
+    throw new InternalServerErrorException(`Please check server logs`);
   }
 }
